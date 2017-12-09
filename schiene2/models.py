@@ -5,6 +5,11 @@ class Connection:
     def __init__(self, journeys):
         self.journeys = journeys
 
+    @classmethod
+    def search(cls, departure, arrival, time):
+        raise NotImplementedError
+        return cls([])
+
 
 class Station:
     def __init__(self, name):
