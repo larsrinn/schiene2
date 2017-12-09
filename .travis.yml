@@ -16,7 +16,7 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-    - "pipenv run pytest -n 8 tests"
+    - "pipenv run pytest"
 
 # After you create the Github repo and add it to Travis, run the
 # travis_pypi_setup.py script to finish PyPI deployment setup
