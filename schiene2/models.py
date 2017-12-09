@@ -1,14 +1,22 @@
 from pendulum import Pendulum
-
+from schiene2.mobile_page import DetailParser, connections
 
 class Connection:
     def __init__(self, journeys):
         self.journeys = journeys
 
     @classmethod
-    def search(cls, departure, arrival, time):
-        raise NotImplementedError
-        return cls([])
+    def search(cls, origin, destination, time):
+        url = connections(origin, destination, time)[0]['detail_url']
+        parser = DetailParser(url)
+        return cls.from_list(parser.journeys())
+
+    @classmethod
+    def from_list(cls, lst):
+        journeys = [
+            Journey.from_dict(_) for _ in lst
+        ]
+        return Connection(journeys)
 
 
 class Station:
@@ -20,6 +28,10 @@ class Train:
     def __init__(self, number):
         self.number = number
 
+    @classmethod
+    def from_dict(cls, dct):
+        return cls(**dct)
+
 
 class DepartureOrArrival:
     def __init__(self, station: Station, time: Pendulum, track):
@@ -27,9 +39,22 @@ class DepartureOrArrival:
         self.time = time
         self.track = track
 
+    @classmethod
+    def from_dict(cls, dct):
+        dct['station'] = Station(dct['station'])
+        return DepartureOrArrival(**dct)
+
 
 class Journey:
     def __init__(self, departure: DepartureOrArrival, arrival: DepartureOrArrival, train: Train):
         self.departure = departure
         self.arrival = arrival
         self.train = train
+
+    @classmethod
+    def from_dict(cls, dct):
+        return cls(
+            departure=DepartureOrArrival.from_dict(dct['departure']),
+            arrival=DepartureOrArrival.from_dict(dct['arrival']),
+            train=Train.from_dict(dct['train'])
+        )

@@ -8,6 +8,8 @@ name = "pypi"
 [packages]
 
 pendulum = "*"
+requests = "*"
+"beautifulsoup4" = "*"
 
 
 [dev-packages]
