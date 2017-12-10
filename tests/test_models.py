@@ -1,7 +1,7 @@
 import pytest
 import pendulum
 
-from schiene2.models import Connection, DepartureOrArrival, Train, Station, Journey
+from schiene2.models import ConnectionDetails, DepartureOrArrival, Train, Station, Journey
 
 
 @pytest.fixture
@@ -67,7 +67,7 @@ class TestJourney:
         assert isinstance(journey.train, Train)
 
 
-class TestConnection:
+class TestConnectionDetails:
     def test_can_create_from_list(self):
         lst = [
             {
@@ -101,26 +101,26 @@ class TestConnection:
                 }
             }
         ]
-        connection = Connection.from_list(lst)
-        assert isinstance(connection, Connection)
+        connection = ConnectionDetails.from_list(lst)
+        assert isinstance(connection, ConnectionDetails)
         assert len(connection.journeys) == 2
         assert all([isinstance(journey, Journey) for journey in connection.journeys])
 
     def test_can_create_by_search(self):
-        connection = Connection.search(
+        connection = ConnectionDetails.search(
             'Frankfurt Hbf',
             'Hinterzarten',
             pendulum.create(2017, 12, 9, 14, 57)
         )
-        assert isinstance(connection, Connection)
+        assert isinstance(connection, ConnectionDetails)
 
     def test_search_can_be_invoked_with_stations(self):
-        connection = Connection.search(
+        connection = ConnectionDetails.search(
             Station('Frankfurt Hbf'),
             Station('Hinterzarten'),
             pendulum.create(2017, 12, 9, 14, 57)
         )
-        assert isinstance(connection, Connection)
+        assert isinstance(connection, ConnectionDetails)
 
     def test_can_access_origin_and_destination(self, complete_connection):
         assert complete_connection.origin.station.name == 'Köln Hbf'
@@ -132,7 +132,7 @@ class TestConnection:
 
     def test_can_search_for_part_connection_after_train_missed(self, complete_connection, mocker):
         station = complete_connection.transition_stations[0]
-        mock_search = mocker.patch('schiene2.models.Connection.search')
+        mock_search = mocker.patch('schiene2.models.ConnectionDetails.search')
 
         complete_connection.search_after_missed_at_station(station)
 
@@ -180,3 +180,11 @@ class TestConnection:
 
     def test_can_access_total_delay_if_connections_missed(self, updated_connection):
         assert updated_connection.delay_at_destination == pendulum.interval(minutes=61)
+
+    def test_delay_is_zero_if_no_journey_missed(self, complete_connection):
+        assert complete_connection.delay_at_destination == pendulum.interval(minutes=0)
+
+
+class TestConnectionList:
+    def test_can_search_on_mobile_page(self):
+        pass

@@ -1,6 +1,6 @@
 import pendulum
 from pendulum import Pendulum
-from schiene2.mobile_page import DetailParser, connections
+from schiene2.mobile_page import DetailParser, scrape_connections, ConnectionListParser
 
 
 class Station:
@@ -14,12 +14,13 @@ class Station:
         return self.name == other.name
 
 
-class Connection:
+class ConnectionDetails:
     def __init__(self, journeys):
         self.journeys = journeys
         self._original_journeys = None
 
     def __str__(self):
+        # todo in class BaseConnection and more details
         return '{}: {} -> {}: {}'.format(
             self.origin.time,
             self.origin.station.name,
@@ -29,7 +30,7 @@ class Connection:
 
     @property
     def original_journeys(self):
-        return self._original_journeys
+        return self._original_journeys or self.journeys
 
     @original_journeys.setter
     def original_journeys(self, value):
@@ -40,7 +41,7 @@ class Connection:
     def search(cls, origin, destination, time=pendulum.now()):
         origin = str(origin)
         destination = str(destination)
-        url = connections(origin, destination, time)[0]['detail_url']
+        url = scrape_connections(origin, destination, time)[0]['detail_url']
         parser = DetailParser(url)
         return cls.from_list(parser.journeys())
 
@@ -49,7 +50,10 @@ class Connection:
         journeys = [
             Journey.from_dict(_) for _ in lst
         ]
-        return Connection(journeys)
+        return ConnectionDetails(journeys)
+
+    def update_details(self):
+        pass
 
     def search_after_missed_at_station(self, station: Station):
         first_missed_journey = [journey
@@ -86,6 +90,44 @@ class Connection:
         return period.as_timedelta()
 
 
+class Connection:
+    #todo test data structure
+    def __init__(self, detail_url, **kwargs):
+        self.detail_url = detail_url
+        self.kwargs = kwargs
+
+    def get_details(self):
+        #todo test
+        parser = DetailParser(self.detail_url)
+        return ConnectionDetails.from_list(parser.journeys())
+
+
+class ConnectionList:
+    # TODO test data structure
+    def __init__(self, connections):
+        self.connections = connections
+
+    @classmethod
+    def search(cls, origin, destination, time=pendulum.now(), only_direct=False):
+        #todo test
+        parser = ConnectionListParser(origin, destination, time, only_direct)
+        return cls.from_list(parser.connections)
+
+    @classmethod
+    def from_list(cls, lst):
+        #TODO test
+        connections = [
+            Connection(
+                detail_url=connection['detail_url'],
+                origin=DepartureOrArrival.from_dict(connection['origin']),
+                destination=DepartureOrArrival.from_dict(connection['destination']),
+                transfers=connection['transfers']
+            )
+            for connection in lst
+        ]
+        return cls(connections)
+
+
 class Train:
     def __init__(self, number):
         self.number = number
@@ -96,7 +138,7 @@ class Train:
 
 
 class DepartureOrArrival:
-    def __init__(self, station: Station, time: Pendulum, track):
+    def __init__(self, station: Station, time: Pendulum, track=None):
         self.station = station
         self.time = time
         self.track = track

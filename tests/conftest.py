@@ -1,6 +1,6 @@
 import pendulum
 import pytest
-from schiene2.models import Connection, Station, Train, DepartureOrArrival, Journey
+from schiene2.models import ConnectionDetails, Station, Train, DepartureOrArrival, Journey
 
 
 @pytest.fixture
@@ -30,12 +30,12 @@ def journey(departure, arrival, train):
 
 @pytest.fixture
 def connection(journey):
-    return Connection(journeys=[journey])
+    return ConnectionDetails(journeys=[journey])
 
 
 @pytest.fixture
 def complete_connection():
-    return Connection([
+    return ConnectionDetails([
         Journey(
             DepartureOrArrival(
                 Station('Köln Hbf'),
@@ -80,7 +80,7 @@ def complete_connection():
 
 @pytest.fixture
 def new_part_connection():
-    return Connection.from_list([
+    return ConnectionDetails.from_list([
         {
             'departure': {
                 'station': 'Frankfurt Hbf',
@@ -116,7 +116,7 @@ def new_part_connection():
 
 @pytest.fixture
 def new_part_connection2():
-    return Connection.from_list([
+    return ConnectionDetails.from_list([
         {
             'departure': {
                 'station': 'Freiburg Hbf',
