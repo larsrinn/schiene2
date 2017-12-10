@@ -1,12 +1,21 @@
+import pendulum
 from pendulum import Pendulum
 from schiene2.mobile_page import DetailParser, connections
+
 
 class Connection:
     def __init__(self, journeys):
         self.journeys = journeys
 
+    def __str__(self):
+        return '{}: {} -> {}'.format(
+            self.origin.time,
+            self.origin.station.name,
+            self.destination.station.name
+        )
+
     @classmethod
-    def search(cls, origin, destination, time):
+    def search(cls, origin, destination, time=pendulum.now()):
         url = connections(origin, destination, time)[0]['detail_url']
         parser = DetailParser(url)
         return cls.from_list(parser.journeys())
@@ -17,6 +26,14 @@ class Connection:
             Journey.from_dict(_) for _ in lst
         ]
         return Connection(journeys)
+
+    @property
+    def origin(self):
+        return self.journeys[0].departure
+
+    @property
+    def destination(self):
+        return self.journeys[-1].arrival
 
 
 class Station:

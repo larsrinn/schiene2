@@ -88,7 +88,7 @@ class TestConnection:
                     'track': 1
                 },
                 'train': {
-                    'number': 'ICE 293'
+                    'number': 'RE 235'
                 }
             }
         ]
@@ -96,3 +96,7 @@ class TestConnection:
         assert isinstance(connection, Connection)
         assert len(connection.journeys) == 2
         assert all([isinstance(journey, Journey) for journey in connection.journeys])
+
+    def test_can_access_origin_and_destination(self, complete_connection):
+        assert complete_connection.origin.station.name == 'Frankfurt Hbf'
+        assert complete_connection.destination.station.name == 'Hinterzarten'

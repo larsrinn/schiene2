@@ -31,3 +31,35 @@ def journey(departure, arrival, train):
 @pytest.fixture
 def connection(journey):
     return Connection(journeys=[journey])
+
+
+@pytest.fixture
+def complete_connection():
+    return Connection([
+        Journey(
+            DepartureOrArrival(
+                Station('Frankfurt Hbf'),
+                pendulum.create(2017, 12, 9, 14, 45),
+                6
+            ),
+            DepartureOrArrival(
+                Station('Freiburg Hbf'),
+                pendulum.create(2017, 12, 9, 16, 45),
+                3
+            ),
+            Train(number='ICE 293')
+        ),
+        Journey(
+            DepartureOrArrival(
+                Station('Freiburg Hbf'),
+                pendulum.create(2017, 12, 9, 17, 10),
+                8
+            ),
+            DepartureOrArrival(
+                Station('Hinterzarten'),
+                pendulum.create(2017, 12, 9, 17, 55),
+                1
+            ),
+            Train(number='RE 123')
+        ),
+    ])
