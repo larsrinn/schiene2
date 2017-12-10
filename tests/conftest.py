@@ -40,12 +40,14 @@ def complete_connection():
             DepartureOrArrival(
                 Station('Köln Hbf'),
                 pendulum.create(2017, 12, 9, 13, 11),
-                1
+                1,
+                pendulum.create(2017, 12, 9, 13, 11),
             ),
             DepartureOrArrival(
                 Station('Frankfurt Hbf'),
                 pendulum.create(2017, 12, 9, 14, 22),
-                18
+                18,
+                pendulum.create(2017, 12, 9, 13, 11),
             ),
             Train(number='ICE 293')
         ),
@@ -53,12 +55,14 @@ def complete_connection():
             DepartureOrArrival(
                 Station('Frankfurt Hbf'),
                 pendulum.create(2017, 12, 9, 14, 45),
-                6
+                6,
+                pendulum.create(2017, 12, 9, 14, 45),
             ),
             DepartureOrArrival(
                 Station('Freiburg Hbf'),
                 pendulum.create(2017, 12, 9, 16, 45),
-                3
+                3,
+                pendulum.create(2017, 12, 9, 16, 45),
             ),
             Train(number='ICE 293')
         ),
@@ -66,12 +70,14 @@ def complete_connection():
             DepartureOrArrival(
                 Station('Freiburg Hbf'),
                 pendulum.create(2017, 12, 9, 17, 10),
-                8
+                8,
+                pendulum.create(2017, 12, 9, 17, 10),
             ),
             DepartureOrArrival(
                 Station('Hinterzarten'),
                 pendulum.create(2017, 12, 9, 17, 55),
-                1
+                1,
+                pendulum.create(2017, 12, 9, 17, 59),
             ),
             Train(number='RE 123')
         ),
@@ -85,12 +91,14 @@ def new_part_connection():
             'departure': {
                 'station': 'Frankfurt Hbf',
                 'time': pendulum.create(2017, 12, 9, 15, 45),
-                'track': 8
+                'track': 8,
+                'actual_time': pendulum.create(2017, 12, 9, 15, 45),
             },
             'arrival': {
                 'station': 'Freiburg Hbf',
                 'time': pendulum.create(2017, 12, 9, 17, 45),
-                'track': 1
+                'track': 1,
+                'actual_time': pendulum.create(2017, 12, 9, 17, 45),
             },
             'train': {
                 'number': 'RE 236'
@@ -100,11 +108,11 @@ def new_part_connection():
             'departure': {
                 'station': 'Freiburg Hbf',
                 'time': pendulum.create(2017, 12, 9, 18, 22),
-                'track': 8
+                'track': 8,
             },
             'arrival': {
                 'station': 'Hinterzarten',
-                'time': pendulum.create(2017, 12, 9, 18, 56),
+                'time': pendulum.create(2017, 12, 9, 18, 58),
                 'track': 1
             },
             'train': {

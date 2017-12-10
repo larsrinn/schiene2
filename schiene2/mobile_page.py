@@ -70,7 +70,17 @@ def handle_ambiguous_entry(html):
     return html
 
 
-class ConnectionListParser:
+class BaseParser:
+    def timestring_to_pendulum(self, timestring):
+        datetimestring = "{} {}".format(self.datestring, timestring)
+        return pendulum.parse(datetimestring, year_first=False, day_first=True, tz='Europe/Berlin')
+
+    @property
+    def datestring(self):
+        raise NotImplementedError
+
+
+class ConnectionListParser(BaseParser):
     def __init__(self, origin, destination, dt=pendulum.now(), only_direct=False):
         query = {
             'S': str(origin),
@@ -117,10 +127,6 @@ class ConnectionListParser:
                 for first_column
                 in self.soup.find_all("td", class_="overview timelink")]
 
-    def timestring_to_pendulum(self, timestring):
-        datetimestring = "{} {}".format(self.datestring, timestring)
-        return pendulum.parse(datetimestring, year_first=False, day_first=True, tz='Europe/Berlin')
-
     @staticmethod
     def handle_ambiguous_entry(html):
         soup = BeautifulSoup(html, 'html.parser')
@@ -163,7 +169,7 @@ class ConnectionListParser:
         return self.header.find_all('span')[1].string
 
 
-class DetailParser:
+class DetailParser(BaseParser):
     def __init__(self, url):
         self.station_names = []
         self.times = []
@@ -207,15 +213,24 @@ class DetailParser:
         return re.search(r'\d\d.\d\d.\d\d', str(div_with_datestring)).group(0)
 
     def convert_raw_departure_or_arrival(self, div):
-        timestring = re.search(r'\d\d:\d\d', str(div)).group(0)
-        datetimestring = "{} {}".format(self.datestring, timestring)
-        datetime = pendulum.parse(datetimestring, year_first=False, day_first=True, tz='Europe/Berlin')
+        # todo in own class
+        time = self.timestring_to_pendulum(
+            re.search(r'\d\d:\d\d', str(div)).group(0)
+        )
+        try:
+            actual_time = self.timestring_to_pendulum(
+                div.find('span', class_='delay').string
+            )
+        except AttributeError:
+            actual_time = time
         try:
             track = re.search('Gl\. (\d+)', str(div)).group(1)
         except AttributeError:
             track = None
-        return {
+        data = {
             'station': div.find('span', class_='bold').contents[0],
-            'time': datetime,
-            'track': track
+            'time': time,
+            'track': track,
+            'actual_time': actual_time
         }
+        return data

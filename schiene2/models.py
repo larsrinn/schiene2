@@ -93,7 +93,7 @@ class ConnectionDetails(BaseConnection):
 
     @property
     def delay_at_destination(self):
-        period = self.destination.time - self.original_journeys[-1].arrival.time
+        period = self.destination.actual_time - self.original_journeys[-1].arrival.time
         return period.as_timedelta()
 
     @property
@@ -160,15 +160,21 @@ class Train:
 
 
 class DepartureOrArrival:
-    def __init__(self, station: Station, time: Pendulum, track=None):
+    def __init__(self, station: Station, time: Pendulum, track=None, actual_time=None):
         self.station = station
         self.time = time
         self.track = track
+        self.actual_time = actual_time or time
 
     @classmethod
     def from_dict(cls, dct):
         dct['station'] = Station(dct['station'])
         return DepartureOrArrival(**dct)
+
+    @property
+    def delay(self):
+        period = self.actual_time - self.time
+        return period.as_timedelta()
 
 
 class Journey:

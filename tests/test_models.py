@@ -22,6 +22,10 @@ class TestDepartureOrArrival:
         assert isinstance(doa, DepartureOrArrival)
         assert isinstance(doa.station, Station)
 
+    def test_delay(self, arrival):
+        arrival.actual_time = arrival.time.add(minutes=5)
+        assert arrival.delay == pendulum.interval(minutes=5)
+
 
 class TestTrain:
     def test_can_create_from_dict(self):
@@ -179,10 +183,10 @@ class TestConnectionDetails:
         assert complete_connection.original_journeys == original_journeys
 
     def test_can_access_total_delay_if_connections_missed(self, updated_connection):
-        assert updated_connection.delay_at_destination == pendulum.interval(minutes=61)
+        assert updated_connection.delay_at_destination == pendulum.interval(minutes=63)
 
     def test_delay_is_zero_if_no_journey_missed(self, complete_connection):
-        assert complete_connection.delay_at_destination == pendulum.interval(minutes=0)
+        assert complete_connection.delay_at_destination == pendulum.interval(minutes=4)
 
     def test_number_of_transfers(self, complete_connection):
         assert complete_connection.transfers == 2
