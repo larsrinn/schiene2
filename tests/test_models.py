@@ -184,6 +184,9 @@ class TestConnectionDetails:
     def test_delay_is_zero_if_no_journey_missed(self, complete_connection):
         assert complete_connection.delay_at_destination == pendulum.interval(minutes=0)
 
+    def test_number_of_transfers(self, complete_connection):
+        assert complete_connection.transfers == 2
+
 
 class TestConnectionList:
     def test_can_search_on_mobile_page(self):

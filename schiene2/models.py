@@ -14,19 +14,26 @@ class Station:
         return self.name == other.name
 
 
-class ConnectionDetails:
+class BaseConnection:
+    def __str__(self):
+        return '\n{}: {}\n-> {}: {}'.format(
+            self.origin.time.strftime('%H:%M'),
+            self.origin.station.name,
+            self.destination.time.strftime('%H:%M'),
+            self.destination.station.name
+        )
+
+    def __repr__(self):
+        return self.__str__()
+
+    def get_details(self):
+        raise NotImplementedError
+
+
+class ConnectionDetails(BaseConnection):
     def __init__(self, journeys):
         self.journeys = journeys
         self._original_journeys = None
-
-    def __str__(self):
-        # todo in class BaseConnection and more details
-        return '{}: {} -> {}: {}'.format(
-            self.origin.time,
-            self.origin.station.name,
-            self.destination.time,
-            self.destination.station.name
-        )
 
     @property
     def original_journeys(self):
@@ -89,12 +96,21 @@ class ConnectionDetails:
         period = self.destination.time - self.original_journeys[-1].arrival.time
         return period.as_timedelta()
 
+    @property
+    def transfers(self):
+        return len(self.journeys) - 1
 
-class Connection:
+    def get_details(self):
+        return self
+
+
+class Connection(BaseConnection):
     #todo test data structure
-    def __init__(self, detail_url, **kwargs):
+    def __init__(self, detail_url, origin, destination, transfers):
         self.detail_url = detail_url
-        self.kwargs = kwargs
+        self.origin = origin
+        self.destination = destination
+        self.transfers = transfers
 
     def get_details(self):
         #todo test
@@ -106,6 +122,12 @@ class ConnectionList:
     # TODO test data structure
     def __init__(self, connections):
         self.connections = connections
+
+    def __str__(self):
+        return self.connections.__str__()
+
+    def __repr__(self):
+        return self.connections.__repr__()
 
     @classmethod
     def search(cls, origin, destination, time=pendulum.now(), only_direct=False):

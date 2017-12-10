@@ -172,6 +172,7 @@ class DetailParser:
         self.soup = BeautifulSoup(rsp.text, 'html.parser')
 
     def journeys(self):
+        #todo delays
         departure_or_arrivals = [
             self.convert_raw_departure_or_arrival(_) for _ in self._raw_departure_or_arrivals
         ]
