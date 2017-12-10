@@ -44,7 +44,6 @@ def parse_connections(html):
             'products': columns[3].contents[0].split(', '),
         }
 
-
         if columns[1].find('img'):
             data['canceled'] = True
         elif columns[1].find('span', class_="okmsg"):

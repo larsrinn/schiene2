@@ -38,6 +38,19 @@ def complete_connection():
     return Connection([
         Journey(
             DepartureOrArrival(
+                Station('Köln Hbf'),
+                pendulum.create(2017, 12, 9, 13, 11),
+                1
+            ),
+            DepartureOrArrival(
+                Station('Frankfurt Hbf'),
+                pendulum.create(2017, 12, 9, 14, 22),
+                18
+            ),
+            Train(number='ICE 293')
+        ),
+        Journey(
+            DepartureOrArrival(
                 Station('Frankfurt Hbf'),
                 pendulum.create(2017, 12, 9, 14, 45),
                 6
@@ -62,4 +75,61 @@ def complete_connection():
             ),
             Train(number='RE 123')
         ),
+    ])
+
+
+@pytest.fixture
+def new_part_connection():
+    return Connection.from_list([
+        {
+            'departure': {
+                'station': 'Frankfurt Hbf',
+                'time': pendulum.create(2017, 12, 9, 15, 45),
+                'track': 8
+            },
+            'arrival': {
+                'station': 'Freiburg Hbf',
+                'time': pendulum.create(2017, 12, 9, 17, 45),
+                'track': 1
+            },
+            'train': {
+                'number': 'RE 236'
+            }
+        },
+        {
+            'departure': {
+                'station': 'Freiburg Hbf',
+                'time': pendulum.create(2017, 12, 9, 18, 22),
+                'track': 8
+            },
+            'arrival': {
+                'station': 'Hinterzarten',
+                'time': pendulum.create(2017, 12, 9, 18, 56),
+                'track': 1
+            },
+            'train': {
+                'number': 'RE 236'
+            }
+        },
+    ])
+
+
+@pytest.fixture
+def new_part_connection2():
+    return Connection.from_list([
+        {
+            'departure': {
+                'station': 'Freiburg Hbf',
+                'time': pendulum.create(2017, 12, 9, 19, 22),
+                'track': 8
+            },
+            'arrival': {
+                'station': 'Hinterzarten',
+                'time': pendulum.create(2017, 12, 9, 19, 56),
+                'track': 1
+            },
+            'train': {
+                'number': 'RE 238'
+            }
+        },
     ])

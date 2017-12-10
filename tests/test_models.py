@@ -3,13 +3,12 @@ import pendulum
 
 from schiene2.models import Connection, DepartureOrArrival, Train, Station, Journey
 
-def test_can_create_by_search():
-    connection = Connection.search(
-        'Frankfurt Hbf',
-        'Hinterzarten',
-        pendulum.create(2017, 12, 9, 14, 57)
-    )
-    assert isinstance(connection, Connection)
+
+@pytest.fixture
+def updated_connection(complete_connection, new_part_connection):
+    station = complete_connection.transition_stations[0]
+    complete_connection.update_after_station(station, new_part_connection)
+    return complete_connection
 
 
 class TestDepartureOrArrival:
@@ -33,6 +32,16 @@ class TestTrain:
         assert isinstance(train, Train)
 
 
+class TestStation:
+    def test_two_stations_are_equal_if_names_are_identical(self):
+        station1 = Station('Freiburg Hbf')
+        station2 = Station('Freiburg Hbf')
+        assert station1 == station2
+
+        station3 = Station('Freiburg')
+        assert station1 != station3
+
+
 class TestJourney:
     def test_can_create_from_dict(self):
         dct = {
@@ -51,7 +60,7 @@ class TestJourney:
             }
         }
         journey = Journey.from_dict(dct)
-        #todo check if correct data is assigned
+        # todo check if correct data is assigned
         assert isinstance(journey, Journey)
         assert isinstance(journey.departure, DepartureOrArrival)
         assert isinstance(journey.arrival, DepartureOrArrival)
@@ -97,6 +106,77 @@ class TestConnection:
         assert len(connection.journeys) == 2
         assert all([isinstance(journey, Journey) for journey in connection.journeys])
 
+    def test_can_create_by_search(self):
+        connection = Connection.search(
+            'Frankfurt Hbf',
+            'Hinterzarten',
+            pendulum.create(2017, 12, 9, 14, 57)
+        )
+        assert isinstance(connection, Connection)
+
+    def test_search_can_be_invoked_with_stations(self):
+        connection = Connection.search(
+            Station('Frankfurt Hbf'),
+            Station('Hinterzarten'),
+            pendulum.create(2017, 12, 9, 14, 57)
+        )
+        assert isinstance(connection, Connection)
+
     def test_can_access_origin_and_destination(self, complete_connection):
-        assert complete_connection.origin.station.name == 'Frankfurt Hbf'
+        assert complete_connection.origin.station.name == 'Köln Hbf'
         assert complete_connection.destination.station.name == 'Hinterzarten'
+
+    def test_can_access_transition_stations(self, complete_connection):
+        transition_stations = complete_connection.transition_stations
+        assert transition_stations == [Station('Frankfurt Hbf'), Station('Freiburg Hbf')]
+
+    def test_can_search_for_part_connection_after_train_missed(self, complete_connection, mocker):
+        station = complete_connection.transition_stations[0]
+        mock_search = mocker.patch('schiene2.models.Connection.search')
+
+        complete_connection.search_after_missed_at_station(station)
+
+        call_kwargs = mock_search.call_args[1]
+        assert call_kwargs['origin'] == station
+        assert call_kwargs['destination'] == complete_connection.destination.station
+        assert call_kwargs['time'] > complete_connection.journeys[1].departure.time
+
+    def test_can_update_after_train_missed(self, complete_connection, new_part_connection):
+        original_journeys = complete_connection.journeys[:]
+        station = complete_connection.transition_stations[0]
+
+        complete_connection.update_after_station(station, new_part_connection)
+
+        assert complete_connection.journeys[-2:] == new_part_connection.journeys[-2:]
+        assert original_journeys[:1] == complete_connection.journeys[:1]
+
+    def test_can_access_original_journeys_after_update(self, complete_connection, new_part_connection):
+        original_journeys = complete_connection.journeys[:]
+        station = complete_connection.transition_stations[0]
+
+        complete_connection.update_after_station(station, new_part_connection)
+
+        assert complete_connection.original_journeys == original_journeys
+
+    def test_update_twice(self, complete_connection, new_part_connection, new_part_connection2):
+        original_journeys = complete_connection.journeys[:]
+
+        complete_connection.update_after_station(
+            complete_connection.transition_stations[0],
+            new_part_connection
+        )
+        complete_connection.update_after_station(
+            complete_connection.transition_stations[1],
+            new_part_connection2
+        )
+
+        expected_journeys = [
+            original_journeys[0],
+            new_part_connection.journeys[0],
+            new_part_connection2.journeys[0]
+        ]
+        assert complete_connection.journeys == expected_journeys
+        assert complete_connection.original_journeys == original_journeys
+
+    def test_can_access_total_delay_if_connections_missed(self, updated_connection):
+        assert updated_connection.delay_at_destination == pendulum.interval(minutes=61)

@@ -21,6 +21,7 @@ pytest-runner = "*"
 "flake8" = "*"
 cryptography = "*"
 pyyaml = "*"
+pytest-mock = "*"
 
 
 [requires]
