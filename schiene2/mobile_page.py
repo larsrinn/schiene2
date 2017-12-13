@@ -82,7 +82,7 @@ class BaseParser:
 
 class ConnectionListParser(BaseParser):
     def __init__(self, origin, destination, dt=pendulum.now(), only_direct=False):
-        query = {
+        params = {
             'S': str(origin),
             'Z': str(destination),
             'date': dt.strftime("%d.%m.%y"),
@@ -90,7 +90,7 @@ class ConnectionListParser(BaseParser):
             'start': 1,
             'REQ0JourneyProduct_opt0': 1 if only_direct else 0
         }
-        rsp = requests.get('http://mobile.bahn.de/bin/mobil/query.exe/dox?', params=query)
+        rsp = requests.get(url='http://mobile.bahn.de/bin/mobil/query.exe/dox?', params=params)
         html = rsp.text
         if 'Ihre Eingabe ist nicht eindeutig' in html:
             html = self.handle_ambiguous_entry(html)

@@ -22,6 +22,7 @@ pytest-runner = "*"
 cryptography = "*"
 pyyaml = "*"
 pytest-mock = "*"
+requests-staticmock = "*"
 
 
 [requires]
