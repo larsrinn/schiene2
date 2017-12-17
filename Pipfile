@@ -23,6 +23,7 @@ cryptography = "*"
 pyyaml = "*"
 pytest-mock = "*"
 requests-staticmock = "*"
+betamax = "*"
 
 
 [requires]
