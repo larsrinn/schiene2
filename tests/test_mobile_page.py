@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 from _pytest.monkeypatch import MonkeyPatch
 
-from schiene2.mobile_page import ConnectionListParser
+from schiene2.mobile_page import ConnectionListParser, ConnectionRowParser
 from schiene2 import mobile_page
 from betamax import Betamax
 
@@ -142,3 +142,10 @@ class TestConnectionListParser:
 
     def test_destination_station(self, recorded_parser):
         assert recorded_parser.destination_station == 'Waldkirch'
+
+    def test_connection_row_parser(self, recorded_parser):
+        parser = ConnectionRowParser(recorded_parser.connection_rows[0])
+        assert parser.transfers == 2
+        assert parser.products == {'IC', 'ICE', 'BSB'}
+        assert parser.origin_time == '14:22'
+        assert parser.destination_time == '18:28'
