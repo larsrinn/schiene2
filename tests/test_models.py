@@ -1,7 +1,10 @@
+from unittest.mock import MagicMock
+
 import pytest
 import pendulum
 
 from schiene2.models import ConnectionDetails, ConnectionList, DepartureOrArrival, Train, Station, Journey
+from schiene2 import models
 
 
 @pytest.fixture
@@ -177,8 +180,15 @@ class TestConnectionDetails:
         assert complete_connection.transfers == 2
 
 
+@pytest.fixture
+def mocked_connection_list_parser(mocker):
+    mock = mocker.patch('schiene2.models.ConnectionListParser')
+    mock.connections.return_value = []
+    return mock
+
+
 class TestConnectionList:
-    def test_can_create_by_search(self):
+    def test_can_create_by_search(self, mocked_connection_list_parser):
         connection = ConnectionList.search(
             'Frankfurt Hbf',
             'Hinterzarten',
@@ -186,7 +196,7 @@ class TestConnectionList:
         )
         assert isinstance(connection, ConnectionList)
 
-    def test_search_can_be_invoked_with_stations(self):
+    def test_search_can_be_invoked_with_stations(self, mocked_connection_list_parser):
         connection = ConnectionList.search(
             Station('Frankfurt Hbf'),
             Station('Hinterzarten'),
