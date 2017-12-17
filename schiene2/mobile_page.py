@@ -80,7 +80,7 @@ class BaseParser:
         raise NotImplementedError
 
 
-class ConnectionRowParser(BaseParser):
+class ConnectionRowParser:
     def __init__(self, row):
         self.row = row
         self.columns = row.find_all('td')
@@ -127,21 +127,21 @@ class ConnectionListParser(BaseParser):
     def connections(self):
         connections = []
         for connection_row in self.connection_rows:
-            columns = connection_row.find_all("td")
+            row_parser = ConnectionRowParser(connection_row)
             data = {
-                'detail_url': columns[0].a.get('href'),
-                'transfers': int(columns[2].contents[0]),
-                'products': columns[3].contents[0].split(', '),
+                'detail_url': row_parser.detail_url,
+                'transfers': row_parser.transfers,
+                'products': row_parser.products,
                 'origin': {
                     'station': self.origin_station,
                     'time': self.timestring_to_pendulum(
-                        columns[0].a.contents[0].string
+                        row_parser.origin_time
                     ),
                 },
                 'destination': {
                     'station': self.destination_station,
                     'time': self.timestring_to_pendulum(
-                        columns[0].a.contents[2].string
+                        row_parser.destination_time
                     ),
                 }
             }

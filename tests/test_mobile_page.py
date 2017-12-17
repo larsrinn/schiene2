@@ -95,7 +95,7 @@ class TestConnectionListParser:
         assert connections == [
             {
                 'transfers': 2,
-                'products': ['IC', 'ICE', 'BSB'],
+                'products': {'IC', 'ICE', 'BSB'},
                 'origin': {
                     'station': 'Gießen',
                     'time': pendulum.create(2017, 12, 15, 14, 22, tz='Europe/Berlin')
@@ -108,7 +108,7 @@ class TestConnectionListParser:
             },
             {
                 'transfers': 3,
-                'products': ['RE', 'ICE', 'BSB'],
+                'products': {'RE', 'ICE', 'BSB'},
                 'origin': {
                     'station': 'Gießen',
                     'time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin')
@@ -121,7 +121,7 @@ class TestConnectionListParser:
             },
             {
                 'transfers': 2,
-                'products': ['RE', 'ICE', 'BSB'],
+                'products': {'RE', 'ICE', 'BSB'},
                 'origin': {
                     'station': 'Gießen',
                     'time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin')
