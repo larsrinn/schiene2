@@ -1,6 +1,6 @@
 import pendulum
 from pendulum import Pendulum
-from schiene2.mobile_page import DetailParser, scrape_connections, ConnectionListParser
+from schiene2.mobile_page import DetailParser, ConnectionListParser
 
 
 class Station:
@@ -45,14 +45,6 @@ class ConnectionDetails(BaseConnection):
             self._original_journeys = value
 
     @classmethod
-    def search(cls, origin, destination, time=pendulum.now()):
-        origin = str(origin)
-        destination = str(destination)
-        url = scrape_connections(origin, destination, time)[0]['detail_url']
-        parser = DetailParser(url)
-        return cls.from_list(parser.journeys())
-
-    @classmethod
     def from_list(cls, lst):
         journeys = [
             Journey.from_dict(_) for _ in lst
@@ -67,7 +59,7 @@ class ConnectionDetails(BaseConnection):
                                 for journey in self.journeys
                                 if journey.departure.station == station][0]
         earliest_departure_time = first_missed_journey.departure.time.add(minutes=1)
-        return self.__class__.search(
+        return ConnectionList.search(
             origin=station,
             destination=self.destination.station,
             time=earliest_departure_time
@@ -131,7 +123,6 @@ class ConnectionList:
 
     @classmethod
     def search(cls, origin, destination, time=pendulum.now(), only_direct=False):
-        #todo test
         parser = ConnectionListParser(origin, destination, time, only_direct)
         return cls.from_list(parser.connections)
 

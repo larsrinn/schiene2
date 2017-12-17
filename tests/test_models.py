@@ -1,7 +1,7 @@
 import pytest
 import pendulum
 
-from schiene2.models import ConnectionDetails, DepartureOrArrival, Train, Station, Journey
+from schiene2.models import ConnectionDetails, ConnectionList, DepartureOrArrival, Train, Station, Journey
 
 
 @pytest.fixture
@@ -110,21 +110,6 @@ class TestConnectionDetails:
         assert len(connection.journeys) == 2
         assert all([isinstance(journey, Journey) for journey in connection.journeys])
 
-    def test_can_create_by_search(self):
-        connection = ConnectionDetails.search(
-            'Frankfurt Hbf',
-            'Hinterzarten',
-            pendulum.create(2017, 12, 9, 14, 57)
-        )
-        assert isinstance(connection, ConnectionDetails)
-
-    def test_search_can_be_invoked_with_stations(self):
-        connection = ConnectionDetails.search(
-            Station('Frankfurt Hbf'),
-            Station('Hinterzarten'),
-            pendulum.create(2017, 12, 9, 14, 57)
-        )
-        assert isinstance(connection, ConnectionDetails)
 
     def test_can_access_origin_and_destination(self, complete_connection):
         assert complete_connection.origin.station.name == 'Köln Hbf'
@@ -136,7 +121,7 @@ class TestConnectionDetails:
 
     def test_can_search_for_part_connection_after_train_missed(self, complete_connection, mocker):
         station = complete_connection.transition_stations[0]
-        mock_search = mocker.patch('schiene2.models.ConnectionDetails.search')
+        mock_search = mocker.patch('schiene2.models.ConnectionList.search')
 
         complete_connection.search_after_missed_at_station(station)
 
@@ -193,5 +178,18 @@ class TestConnectionDetails:
 
 
 class TestConnectionList:
-    def test_can_search_on_mobile_page(self):
-        pass
+    def test_can_create_by_search(self):
+        connection = ConnectionList.search(
+            'Frankfurt Hbf',
+            'Hinterzarten',
+            pendulum.create(2017, 12, 9, 14, 57)
+        )
+        assert isinstance(connection, ConnectionList)
+
+    def test_search_can_be_invoked_with_stations(self):
+        connection = ConnectionList.search(
+            Station('Frankfurt Hbf'),
+            Station('Hinterzarten'),
+            pendulum.create(2017, 12, 9, 14, 57)
+        )
+        assert isinstance(connection, ConnectionList)
