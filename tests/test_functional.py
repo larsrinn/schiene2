@@ -39,7 +39,6 @@ def test_functional(betamax_session, monkeypatch):
 
     # In Berlin verpasst Hans seinen Anschlusszug und sucht nach einer neuen Verbindung
     new_part_connections = connection.search_after_missed_at_station(berlin)
-    print(new_part_connections)
 
     # Er entscheidet sich den nächstmöglichen Anschlusszug zu nehmen
     connection.update_after_station(cologne, new_part_connections[0])

@@ -69,7 +69,6 @@ class ConnectionDetails(BaseConnection):
                                 for journey in self.journeys
                                 if journey.departure.station == station][0]
         earliest_departure_time = first_missed_journey.departure.time.add(minutes=1)
-        print(earliest_departure_time)
         return ConnectionList.search(
             origin=station,
             destination=self.destination.station,
@@ -81,7 +80,6 @@ class ConnectionDetails(BaseConnection):
         start_index_original_journeys = self.transition_stations.index(station) + 1
         del self.journeys[start_index_original_journeys:]
         new_part_connection_details = new_part_connection.get_details()
-        print(new_part_connection_details)
         self.journeys += new_part_connection_details.journeys
 
     @property
@@ -125,6 +123,7 @@ class Connection(BaseConnection):
 
 
 class ConnectionList:
+    # todo function to get connection with soonest arrival
     # TODO test data structure
     def __init__(self, connections):
         self.connections = connections
