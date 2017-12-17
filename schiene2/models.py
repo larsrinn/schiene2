@@ -16,9 +16,17 @@ class Station:
 
 class BaseConnection:
     def __str__(self):
-        return '\n{}: {}\n-> {}: {}'.format(
+        return '\n' \
+               '{}: {}\n' \
+               '  Umstiege: {}\n' \
+               '  Dauer: {}\n' \
+               '  Produkte: {}\n' \
+               '{}: {}'.format(
             self.origin.time.strftime('%H:%M'),
             self.origin.station.name,
+            self.transfers,
+            '{}:{:02}'.format(self.duration.hours, self.duration.minutes),
+            ', '.join(sorted(self.products)),
             self.destination.time.strftime('%H:%M'),
             self.destination.station.name
         )
@@ -29,11 +37,16 @@ class BaseConnection:
     def get_details(self):
         raise NotImplementedError
 
+    @property
+    def duration(self):
+        return self.destination.time - self.origin.time
+
 
 class ConnectionDetails(BaseConnection):
     def __init__(self, journeys):
         self.journeys = journeys
         self._original_journeys = None
+        self.products = []
 
     @property
     def original_journeys(self):
@@ -51,14 +64,12 @@ class ConnectionDetails(BaseConnection):
         ]
         return ConnectionDetails(journeys)
 
-    def update_details(self):
-        pass
-
     def search_after_missed_at_station(self, station: Station):
         first_missed_journey = [journey
                                 for journey in self.journeys
                                 if journey.departure.station == station][0]
         earliest_departure_time = first_missed_journey.departure.time.add(minutes=1)
+        print(earliest_departure_time)
         return ConnectionList.search(
             origin=station,
             destination=self.destination.station,
@@ -69,7 +80,9 @@ class ConnectionDetails(BaseConnection):
         self.original_journeys = self.journeys[:]
         start_index_original_journeys = self.transition_stations.index(station) + 1
         del self.journeys[start_index_original_journeys:]
-        self.journeys += new_part_connection.journeys
+        new_part_connection_details = new_part_connection.get_details()
+        print(new_part_connection_details)
+        self.journeys += new_part_connection_details.journeys
 
     @property
     def origin(self):
@@ -85,8 +98,7 @@ class ConnectionDetails(BaseConnection):
 
     @property
     def delay_at_destination(self):
-        period = self.destination.actual_time - self.original_journeys[-1].arrival.time
-        return period.as_timedelta()
+        return self.destination.actual_time - self.original_journeys[-1].arrival.time
 
     @property
     def transfers(self):
@@ -98,14 +110,16 @@ class ConnectionDetails(BaseConnection):
 
 class Connection(BaseConnection):
     #todo test data structure
-    def __init__(self, detail_url, origin, destination, transfers):
+    def __init__(self, detail_url, origin, destination, transfers, products):
         self.detail_url = detail_url
         self.origin = origin
         self.destination = destination
         self.transfers = transfers
+        self.products = products
 
-    def get_details(self):
+    def get_details(self) -> ConnectionDetails:
         #todo test
+        #todo different behaviour for 0 or more transitions (bsp. Köln -> Bergisch Gladbach)
         parser = DetailParser(self.detail_url)
         return ConnectionDetails.from_list(parser.journeys())
 
@@ -121,6 +135,12 @@ class ConnectionList:
     def __repr__(self):
         return self.connections.__repr__()
 
+    def __getitem__(self, item):
+        return self.connections[item]
+
+    def __len__(self):
+        return len(self.connections)
+
     @classmethod
     def search(cls, origin, destination, time=pendulum.now(), only_direct=False):
         parser = ConnectionListParser(origin, destination, time, only_direct)
@@ -134,7 +154,8 @@ class ConnectionList:
                 detail_url=connection['detail_url'],
                 origin=DepartureOrArrival.from_dict(connection['origin']),
                 destination=DepartureOrArrival.from_dict(connection['destination']),
-                transfers=connection['transfers']
+                transfers=connection['transfers'],
+                products=connection['products']
             )
             for connection in lst
         ]
@@ -164,8 +185,7 @@ class DepartureOrArrival:
 
     @property
     def delay(self):
-        period = self.actual_time - self.time
-        return period.as_timedelta()
+        return self.actual_time - self.time
 
 
 class Journey:

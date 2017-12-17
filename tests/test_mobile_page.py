@@ -11,11 +11,6 @@ from schiene2 import mobile_page
 from betamax import Betamax
 
 
-with Betamax.configure() as config:
-    config.cassette_library_dir = 'tests/cassettes'
-    config.default_cassette_options['record_mode'] = 'once'
-
-
 @pytest.fixture(scope='class')
 def betamax_class_session(request):
     session = requests.Session()

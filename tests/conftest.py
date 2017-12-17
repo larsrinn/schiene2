@@ -1,6 +1,12 @@
+from betamax import Betamax
 import pendulum
 import pytest
 from schiene2.models import ConnectionDetails, Station, Train, DepartureOrArrival, Journey
+
+
+with Betamax.configure() as config:
+    config.cassette_library_dir = 'tests/cassettes'
+    config.default_cassette_options['record_mode'] = 'once'
 
 
 @pytest.fixture
