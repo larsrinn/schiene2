@@ -1,5 +1,6 @@
 import pendulum
 from pendulum import Pendulum
+import re
 from schiene2.mobile_page import DetailParser, ConnectionListParser
 
 
@@ -163,11 +164,27 @@ class ConnectionList:
 
 class Train:
     def __init__(self, number):
+        self.type = None
+        self.digits = None
         self.number = number
 
     @classmethod
     def from_dict(cls, dct):
         return cls(**dct)
+
+    def set_number(self, number):
+        regex = r'^([A-Z]*)\s*([0-9]*)$'
+        matches = re.match(regex, number)
+        self.type = matches.group(1)
+        self.digits = matches.group(2)
+
+    @property
+    def number(self):
+        return '{} {}'.format(self.type, self.digits)
+
+    @number.setter
+    def number(self, value):
+        self.set_number(value)
 
 
 class DepartureOrArrival:

@@ -38,6 +38,17 @@ class TestTrain:
         train = Train.from_dict(dct)
         assert isinstance(train, Train)
 
+    def test_number_is_set_with_one_space(self):
+        train1 = Train(number='ICE   342')
+        train2 = Train(number='ICE342')
+        assert train1.number == train2.number == 'ICE 342'
+        assert train1.type == train2.type == 'ICE'
+        assert train1.digits == train2.digits == '342'
+        bus = Train(number='BUS')
+        assert bus.number == 'BUS '
+        assert bus.type == 'BUS'
+        assert bus.digits == ''
+
 
 class TestStation:
     def test_two_stations_are_equal_if_names_are_identical(self):
