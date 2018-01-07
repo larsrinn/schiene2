@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 from _pytest.monkeypatch import MonkeyPatch
 
-from schiene2.mobile_page import ConnectionListParser, ConnectionRowParser
+from schiene2.mobile_page import ConnectionListParser, ConnectionRowParser, BaseParser
 from schiene2 import mobile_page
 from betamax import Betamax
 
@@ -34,6 +34,14 @@ def recorded_parser(parser_recording):
     origin = 'Gießen Hbf'
     destination = 'Waldkirch'
     datetime = pendulum.create(2017, 12, 15, 14, 2, tz='Europe/Berlin')
+    return ConnectionListParser(origin, destination, datetime)
+
+
+@pytest.fixture(scope='class')
+def live_parser(parser_recording):
+    origin = 'Frankfurt Hbf'
+    destination = 'Freiburg'
+    datetime = pendulum.create(2017, 12, 20, 20, 11, tz='Europe/Berlin')
     return ConnectionListParser(origin, destination, datetime)
 
 
@@ -93,11 +101,13 @@ class TestConnectionListParser:
                 'products': {'IC', 'ICE', 'BSB'},
                 'origin': {
                     'station': 'Gießen',
-                    'time': pendulum.create(2017, 12, 15, 14, 22, tz='Europe/Berlin')
+                    'time': pendulum.create(2017, 12, 15, 14, 22, tz='Europe/Berlin'),
+                    'actual_time': pendulum.create(2017, 12, 15, 14, 22, tz='Europe/Berlin'),
                 },
                 'destination': {
                     'station': 'Waldkirch',
-                    'time': pendulum.create(2017, 12, 15, 18, 28, tz='Europe/Berlin')
+                    'time': pendulum.create(2017, 12, 15, 18, 28, tz='Europe/Berlin'),
+                    'actual_time': pendulum.create(2017, 12, 15, 18, 28, tz='Europe/Berlin'),
                 },
 
             },
@@ -106,11 +116,13 @@ class TestConnectionListParser:
                 'products': {'RE', 'ICE', 'BSB'},
                 'origin': {
                     'station': 'Gießen',
-                    'time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin')
+                    'time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin'),
+                    'actual_time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin'),
                 },
                 'destination': {
                     'station': 'Waldkirch',
-                    'time': pendulum.create(2017, 12, 15, 18, 28, tz='Europe/Berlin')
+                    'time': pendulum.create(2017, 12, 15, 18, 28, tz='Europe/Berlin'),
+                    'actual_time': pendulum.create(2017, 12, 15, 18, 28, tz='Europe/Berlin'),
                 },
 
             },
@@ -119,11 +131,13 @@ class TestConnectionListParser:
                 'products': {'RE', 'ICE', 'BSB'},
                 'origin': {
                     'station': 'Gießen',
-                    'time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin')
+                    'time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin'),
+                    'actual_time': pendulum.create(2017, 12, 15, 14, 54, tz='Europe/Berlin'),
                 },
                 'destination': {
                     'station': 'Waldkirch',
-                    'time': pendulum.create(2017, 12, 15, 19, 0, tz='Europe/Berlin')
+                    'time': pendulum.create(2017, 12, 15, 19, 0, tz='Europe/Berlin'),
+                    'actual_time': pendulum.create(2017, 12, 15, 19, 0, tz='Europe/Berlin'),
                 },
 
             },
@@ -144,3 +158,29 @@ class TestConnectionListParser:
         assert parser.products == {'IC', 'ICE', 'BSB'}
         assert parser.origin_time == '14:22'
         assert parser.destination_time == '18:28'
+
+    @pytest.mark.parametrize("row_number, expected_origin, expected_destination", [
+        (0, '20:50', '23:09'),
+        (1, '21:02', '23:11'),
+        (2, '21:51', '00:21'),
+        (4, '22:06', '05:25')
+    ])
+    def test_can_parse_delays_from_list(self, row_number, expected_origin, expected_destination, live_parser):
+        connection_parser = ConnectionRowParser(
+            live_parser.connection_rows[row_number]
+        )
+        assert connection_parser.actual_origin_time == expected_origin
+        assert connection_parser.actual_destination_time == expected_destination
+
+    def test_has_first_timestring_property(self, recorded_parser):
+        assert recorded_parser.first_timestring == '14:02'
+
+
+class TestBaseParser:
+    def test_timestring_to_pendulum_on_day_switch(self, monkeypatch):
+        monkeypatch.setattr('schiene2.mobile_page.BaseParser.datestring', '20.12.2017')
+        parser = BaseParser()
+        parser.first_timestring = '14:30'
+        assert parser.timestring_to_pendulum('15:00') == pendulum.create(2017, 12, 20, 15, 0, tz='Europe/Berlin')
+        assert parser.timestring_to_pendulum('14:00') == pendulum.create(2017, 12, 21, 14, 0, tz='Europe/Berlin')
+

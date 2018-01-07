@@ -7,7 +7,10 @@ import re
 class BaseParser:
     def timestring_to_pendulum(self, timestring):
         datetimestring = "{} {}".format(self.datestring, timestring)
-        return pendulum.parse(datetimestring, year_first=False, day_first=True, tz='Europe/Berlin')
+        datetime = pendulum.parse(datetimestring, year_first=False, day_first=True, tz='Europe/Berlin')
+        if timestring < self.first_timestring:
+            datetime = datetime.add(days=1)
+        return datetime
 
     @property
     def datestring(self):
@@ -40,6 +43,30 @@ class ConnectionRowParser:
     def destination_time(self):
         return self.columns[0].a.contents[2].string
 
+    @property
+    def actual_times(self):
+        delay_column = self.columns[1]
+        children = delay_column.find_all(['span', 'br'])
+        origin_delayed = children[0].text != ''
+        destination_delayed = children[-1].text != ''
+        times = [
+            self.origin_time,
+            self.destination_time
+        ]
+        if origin_delayed:
+            times[0] = children[0].text
+        if destination_delayed:
+            times[1] = children[-1].text
+        return times
+
+    @property
+    def actual_origin_time(self):
+        return self.actual_times[0]
+
+    @property
+    def actual_destination_time(self):
+        return self.actual_times[1]
+
 
 class ConnectionListParser(BaseParser):
     def __init__(self, origin, destination, dt=pendulum.now(), only_direct=False):
@@ -56,6 +83,7 @@ class ConnectionListParser(BaseParser):
         if 'Ihre Eingabe ist nicht eindeutig' in html:
             html = self.handle_ambiguous_entry(html)
         self.soup = BeautifulSoup(html, 'html.parser')
+        self.first_timestring = dt.strftime('%H:%M')
 
     @property
     def connections(self):
@@ -71,12 +99,18 @@ class ConnectionListParser(BaseParser):
                     'time': self.timestring_to_pendulum(
                         row_parser.origin_time
                     ),
+                    'actual_time': self.timestring_to_pendulum(
+                        row_parser.actual_origin_time
+                    )
                 },
                 'destination': {
                     'station': self.destination_station,
                     'time': self.timestring_to_pendulum(
                         row_parser.destination_time
                     ),
+                    'actual_time': self.timestring_to_pendulum(
+                        row_parser.actual_destination_time
+                    )
                 }
             }
             connections.append(data)
@@ -171,7 +205,12 @@ class DetailParser(BaseParser):
     @property
     def datestring(self):
         div_with_datestring = self.soup.find('span', class_='querysummary2')
-        return re.search(r'\d\d.\d\d.\d\d', str(div_with_datestring)).group(0)
+        return re.search(r'\d\d.\d\d.\d\d', str(div_with_datestring)).group(0)\
+
+    @property
+    def first_timestring(self):
+        div_with_datestring = self.soup.find('span', class_='querysummary2')
+        return re.search(r'\d\d:\d\d', str(div_with_datestring)).group(0)
 
     def convert_raw_departure_or_arrival(self, div):
         # todo in own class
