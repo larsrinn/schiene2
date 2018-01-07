@@ -17,7 +17,7 @@ def betamax_class_session(request):
     recorder = Betamax(session)
     with recorder.use_cassette(
         request.module.__name__ + '.' + request.cls.__name__
-    ) as cassette:
+    ):
         yield session
 
 
@@ -183,4 +183,3 @@ class TestBaseParser:
         parser.first_timestring = '14:30'
         assert parser.timestring_to_pendulum('15:00') == pendulum.create(2017, 12, 20, 15, 0, tz='Europe/Berlin')
         assert parser.timestring_to_pendulum('14:00') == pendulum.create(2017, 12, 21, 14, 0, tz='Europe/Berlin')
-

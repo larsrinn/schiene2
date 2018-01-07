@@ -1,10 +1,7 @@
-from unittest.mock import MagicMock
-
 import pytest
 import pendulum
 
 from schiene2.models import ConnectionDetails, ConnectionList, DepartureOrArrival, Train, Station, Journey
-from schiene2 import models
 
 
 @pytest.fixture
@@ -123,7 +120,6 @@ class TestConnectionDetails:
         assert isinstance(connection, ConnectionDetails)
         assert len(connection.journeys) == 2
         assert all([isinstance(journey, Journey) for journey in connection.journeys])
-
 
     def test_can_access_origin_and_destination(self, complete_connection):
         assert complete_connection.origin.station.name == 'Köln Hbf'

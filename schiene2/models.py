@@ -23,14 +23,14 @@ class BaseConnection:
                '  Dauer: {}\n' \
                '  Produkte: {}\n' \
                '{}: {}'.format(
-            self.origin.time.strftime('%H:%M'),
-            self.origin.station.name,
-            self.transfers,
-            '{}:{:02}'.format(self.duration.hours, self.duration.minutes),
-            ', '.join(sorted(self.products)),
-            self.destination.time.strftime('%H:%M'),
-            self.destination.station.name
-        )
+                self.origin.time.strftime('%H:%M'),
+                self.origin.station.name,
+                self.transfers,
+                '{}:{:02}'.format(self.duration.hours, self.duration.minutes),
+                ', '.join(sorted(self.products)),
+                self.destination.time.strftime('%H:%M'),
+                self.destination.station.name
+                )
 
     def __repr__(self):
         return self.__str__()
@@ -108,7 +108,7 @@ class ConnectionDetails(BaseConnection):
 
 
 class Connection(BaseConnection):
-    #todo test data structure
+    # todo test data structure
     def __init__(self, detail_url, origin, destination, transfers, products):
         self.detail_url = detail_url
         self.origin = origin
@@ -117,8 +117,8 @@ class Connection(BaseConnection):
         self.products = products
 
     def get_details(self) -> ConnectionDetails:
-        #todo test
-        #todo different behaviour for 0 or more transitions (bsp. Köln -> Bergisch Gladbach)
+        # todo test
+        # todo different behaviour for 0 or more transitions (bsp. Köln -> Bergisch Gladbach)
         parser = DetailParser(self.detail_url)
         return ConnectionDetails.from_list(parser.journeys())
 
@@ -148,7 +148,7 @@ class ConnectionList:
 
     @classmethod
     def from_list(cls, lst):
-        #TODO test
+        # TODO test
         connections = [
             Connection(
                 detail_url=connection['detail_url'],

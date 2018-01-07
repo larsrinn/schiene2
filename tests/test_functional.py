@@ -1,7 +1,7 @@
 import pendulum
 import pytest
-import requests
 from schiene2 import ConnectionList, Station
+
 
 @pytest.mark.functional
 def test_functional(betamax_session, monkeypatch):
@@ -52,4 +52,3 @@ def test_functional(betamax_session, monkeypatch):
 
     # Dabei hat er eine Verspätung von 180 Minuten
     assert connection.delay_at_destination.in_minutes() == 180
-

@@ -173,7 +173,7 @@ class DetailParser(BaseParser):
         self.soup = BeautifulSoup(rsp.text, 'html.parser')
 
     def journeys(self):
-        #todo delays
+        # todo delays
         departure_or_arrivals = [
             self.convert_raw_departure_or_arrival(_) for _ in self._raw_departure_or_arrivals
         ]
@@ -205,7 +205,7 @@ class DetailParser(BaseParser):
     @property
     def datestring(self):
         div_with_datestring = self.soup.find('span', class_='querysummary2')
-        return re.search(r'\d\d.\d\d.\d\d', str(div_with_datestring)).group(0)\
+        return re.search(r'\d\d.\d\d.\d\d', str(div_with_datestring)).group(0)
 
     @property
     def first_timestring(self):
