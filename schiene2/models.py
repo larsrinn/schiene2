@@ -17,12 +17,11 @@ class Station:
 
 class BaseConnection:
     def __str__(self):
-        return '\n' \
-               '{}: {}\n' \
+        return '{}: {}\n' \
                '  Umstiege: {}\n' \
                '  Dauer: {}\n' \
                '  Produkte: {}\n' \
-               '{}: {}'.format(
+               '{}: {}\n'.format(
                 self.origin.time.strftime('%H:%M'),
                 self.origin.station.name,
                 self.transfers,
@@ -168,6 +167,9 @@ class Train:
         self.digits = None
         self.number = number
 
+    def __str__(self):
+        return self.number
+
     @classmethod
     def from_dict(cls, dct):
         return cls(**dct)
@@ -194,6 +196,13 @@ class DepartureOrArrival:
         self.track = track
         self.actual_time = actual_time or time
 
+    def __str__(self):
+        return '{} - {} - Gleis {}'.format(
+            self.time.strftime('%H:%M'),
+            self.station,
+            self.track
+        )
+
     @classmethod
     def from_dict(cls, dct):
         dct['station'] = Station(dct['station'])
@@ -209,6 +218,9 @@ class Journey:
         self.departure = departure
         self.arrival = arrival
         self.train = train
+
+    def __str__(self):
+        return '{}\n{}\n{}\n'.format(self.train, self.departure, self.arrival)
 
     @classmethod
     def from_dict(cls, dct):

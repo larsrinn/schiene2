@@ -21,11 +21,11 @@ def test_functional(betamax_session, monkeypatch):
     # Ohne weitere Abfrage, können die Zeiten und die Zahl der
     # Umstiege dargestellt werden
     connection = connections[1]
-    assert connection.__str__() == '\n14:31: Berlin Ostbahnhof\n' \
+    assert connection.__str__() == '14:31: Berlin Ostbahnhof\n' \
                                    '  Umstiege: 2\n' \
                                    '  Dauer: 5:06\n' \
                                    '  Produkte: ICE, S\n' \
-                                   '19:37: Bergisch Gladbach'
+                                   '19:37: Bergisch Gladbach\n'
 
     # Um Umsteigebahnhöfe und weitere Details zu erhalten, können diese explizit
     # abgefragt werden
